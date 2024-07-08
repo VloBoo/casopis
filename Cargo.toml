@@ -1,0 +1,7 @@
+[package]
+name = "casopis"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+log = { version = "*", features = ["std"] }
