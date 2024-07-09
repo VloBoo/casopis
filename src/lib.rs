@@ -1,7 +1,18 @@
+use fmt::level;
 use log::{Level, LevelFilter, Log, Metadata, Record, SetLoggerError};
+
+mod fmt;
 
 pub struct Casopis {
     level: Level,
+}
+
+impl Casopis {
+    pub fn init(level: Level) -> Result<(), SetLoggerError> {
+        let mut casopis = Casopis::default();
+        casopis.level = level;
+        log::set_boxed_logger(Box::new(casopis)).map(|()| log::set_max_level(LevelFilter::Trace))
+    }
 }
 
 impl Default for Casopis {
@@ -17,17 +28,10 @@ impl Log for Casopis {
 
     fn log(&self, record: &Record) {
         if self.enabled(record.metadata()) {
-            println!("{} - {}", record.level(), record.args());
+            let time = chrono::Local::now();
+            println!("{:35} {} \x1b[0m[{}]: {}", time.to_rfc3339() , level(record.level()) , record.module_path().unwrap(), record.args());
         }
     }
 
     fn flush(&self) {}
-}
-
-impl Casopis {
-    pub fn init(level: Level) -> Result<(), SetLoggerError> {
-        let mut casopis = Casopis::default();
-        casopis.level = level;
-        log::set_boxed_logger(Box::new(casopis)).map(|()| log::set_max_level(LevelFilter::Info))
-    }
 }
