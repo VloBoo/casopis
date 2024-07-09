@@ -1,4 +1,4 @@
-use fmt::level;
+use fmt::{level, module};
 use log::{Level, LevelFilter, Log, Metadata, Record, SetLoggerError};
 
 mod fmt;
@@ -29,7 +29,7 @@ impl Log for Casopis {
     fn log(&self, record: &Record) {
         if self.enabled(record.metadata()) {
             let time = chrono::Local::now();
-            println!("{:35} {} \x1b[0m[{}]: {}", time.to_rfc3339() , level(record.level()) , record.module_path().unwrap(), record.args());
+            println!("{:35} {} \x1b[0m[{}]: {}", time.to_rfc3339() , level(record.level()) , module(record.module_path().unwrap()) , record.args());
         }
     }
 
