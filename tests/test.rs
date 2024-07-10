@@ -5,10 +5,10 @@ mod hihihaha {
     #[test]
     fn test() {
         let _ = Casopis::init(Level::Trace);
-        log::trace!("T");
-        log::debug!("D");
-        log::info!("I");
-        log::warn!("W");
-        log::error!("E");
+        log::trace!("Trace");
+        log::debug!("Debug");
+        log::info!("Info");
+        log::warn!("Warn");
+        log::error!("Error");
     }
 }

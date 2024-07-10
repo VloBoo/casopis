@@ -2,11 +2,11 @@ use log::Level;
 
 pub fn level(level: Level) -> String {
     match level {
-        Level::Error => "\x1b[1;101mE\x1b[0m",
-        Level::Warn => "\x1b[1;103mW\x1b[0m",
-        Level::Info => "\x1b[1;102mI\x1b[0m",
-        Level::Debug => "\x1b[1;104mD\x1b[0m",
-        Level::Trace => "\x1b[1;105mT\x1b[0m",
+        Level::Error => "\x1b[31mERROR",
+        Level::Warn => "\x1b[33mWARN ",
+        Level::Info => "\x1b[32mINFO ",
+        Level::Debug => "\x1b[34mDEBUG",
+        Level::Trace => "\x1b[35mTRACE",
     }
     .to_owned()
 }
@@ -21,8 +21,12 @@ fn hash_string(s: &str) -> u32 {
     hash
 }
 
-fn string_to_color(s: &str) -> (u8, u8, u8) {
-    hsl_to_rgb((hash_string(s) as f64).rem_euclid(360.0), 0.9f64, 0.70f64)
+fn string_to_h(s: &str) -> f64 {
+    (hash_string(s) as f64).rem_euclid(360.0)
+}
+
+fn h_to_rgb(h: f64) -> (u8, u8, u8) {
+    hsl_to_rgb(h, 0.9f64, 0.70f64)
 }
 
 fn hsl_to_rgb(h: f64, s: f64, l: f64) -> (u8, u8, u8) {
@@ -47,7 +51,7 @@ fn hsl_to_rgb(h: f64, s: f64, l: f64) -> (u8, u8, u8) {
     (r, g, b)
 }
 
-fn mix_colors(color1: (u8, u8, u8) , color2: (u8, u8, u8) , ratio: f32) -> (u8, u8, u8)  {
+fn mix_colors(color1: (u8, u8, u8), color2: (u8, u8, u8), ratio: f32) -> (u8, u8, u8) {
     let r = (color1.0 as f32 * (1.0 - ratio) + color2.0 as f32 * ratio).round() as u8;
     let g = (color1.1 as f32 * (1.0 - ratio) + color2.1 as f32 * ratio).round() as u8;
     let b = (color1.2 as f32 * (1.0 - ratio) + color2.2 as f32 * ratio).round() as u8;
@@ -55,21 +59,26 @@ fn mix_colors(color1: (u8, u8, u8) , color2: (u8, u8, u8) , ratio: f32) -> (u8, 
     (r, g, b)
 }
 
+fn mix_h(h: f64, h2: f64, ratio: f64) -> f64 {
+    h * (1.0 - ratio) + h2 * ratio
+}
+
 pub fn module(module: &str) -> String {
     let modules: Vec<&str> = module.split("::").collect();
     let mut result = String::new();
-    let mut last_color: Option<(u8, u8, u8)> = None;
+    let mut last_h: Option<f64> = None;
     for m in modules {
-        let mut color = string_to_color(m);
-        if let Some(color2) = last_color{
-            color = mix_colors(color, color2, 0.5);
+        let mut h = string_to_h(m);
+        if let Some(h2) = last_h {
+            h = mix_h(h, h2, 0.5);
         }
-        last_color = Some(color);
+        last_h = Some(h);
+        let color = h_to_rgb(h);
         result.push_str(&format!(
-            "\x1b[1;38;2;{};{};{}m{}\x1b[0m",
+            "\x1b[1;38;2;{};{};{}m{}",
             color.0, color.1, color.2, m
         ));
-        result.push_str("\x1b[1;97m::\x1b[0m");
+        result.push_str("\x1b[97m::");
     }
     result
 }
